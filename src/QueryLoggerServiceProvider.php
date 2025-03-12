@@ -26,9 +26,9 @@ class QueryLoggerServiceProvider extends ServiceProvider
                 // Log the query to Laravel's log file
                 Log::debug("Query: {$sql} [{$time} ms]");
 
-                // Optionally, output the query to the browser's console
-                if (!app()->runningInConsole()) {
-                    echo "<script>console.log('Query: " . addslashes($sql) . " [{$time} ms]');</script>";
+                // If using the built-in server, print to the terminal's error log so it shows in the console
+                if (php_sapi_name() === 'cli-server') {
+                    error_log("Query: {$sql} [{$time} ms]");
                 }
             });
         }
@@ -36,6 +36,6 @@ class QueryLoggerServiceProvider extends ServiceProvider
 
     public function register()
     {
-        // You can register additional services or bindings here if needed.
+        // Additional bindings or service registrations...
     }
 }
