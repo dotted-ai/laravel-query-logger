@@ -15,7 +15,7 @@ A simple Laravel package to log and display database queries similar to Rails' c
 ## Requirements
 
 - PHP >= 7.2
-- Laravel 6.x, 7.x, 8.x, or 9.x
+- Laravel 6.x, 7.x, 8.x, 9.x or 10.x
 
 ## Installation
 
