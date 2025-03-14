@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Events\RouteMatched;
+use Monolog\Logger;
+use Monolog\Handler\ErrorLogHandler;
 
 class QueryLoggerServiceProvider extends ServiceProvider
 {
@@ -26,12 +28,14 @@ class QueryLoggerServiceProvider extends ServiceProvider
                     $sql = preg_replace('/\?/', $value, $sql, 1);
                 }
 
+                $queryMessage = "Query: {$sql} [{$time} ms]";
+
                 // Log the query to Laravel's log file
-                Log::debug("Query: {$sql} [{$time} ms]");
+                Log::debug($queryMessage);
 
                 // Output the query to the console when using the built-in server
                 if (php_sapi_name() === 'cli-server') {
-                    error_log("Query: {$sql} [{$time} ms]");
+                    error_log($queryMessage);
                 }
             });
 
@@ -43,19 +47,26 @@ class QueryLoggerServiceProvider extends ServiceProvider
                 $controller = $action['controller'] ?? 'Closure';
                 $middleware = $route->gatherMiddleware();
 
-                $msg = "Route: {$uri} | Controller: {$controller}";
+                $routeMessage = "Route: {$uri} | Controller: {$controller}";
                 if (!empty($middleware)) {
-                    $msg .= " | Middleware: " . implode(', ', $middleware);
+                    $routeMessage .= " | Middleware: " . implode(', ', $middleware);
                 }
 
                 // Log the route information to Laravel's log file
-                Log::debug($msg);
+                Log::debug($routeMessage);
 
                 // Output the route info to the console when using the built-in server
                 if (php_sapi_name() === 'cli-server') {
-                    error_log($msg);
+                    error_log($routeMessage);
                 }
             });
+
+            // Add a custom Monolog handler to also output Log::info messages to the console.
+            if (php_sapi_name() === 'cli-server') {
+                $logger = Log::getLogger();
+                // This handler will output any log with level INFO or higher to the PHP error log
+                $logger->pushHandler(new ErrorLogHandler(Logger::INFO, true, ErrorLogHandler::OPERATING_SYSTEM));
+            }
         }
     }
 
