@@ -10,12 +10,14 @@ A simple Laravel package to log and display database queries similar to Rails' c
 - **Automatic Query Logging:** Listens to all database queries executed by your Laravel application.
 - **Log File Integration:** Records each query, including execution time, into Laravel's default log file (`storage/logs/laravel.log`).
 - **Browser Console Output:** Optionally outputs queries to the browser's JavaScript console for quick inspection.
+- **Route Logging:** Logs route details—including the URI, controller, and middleware—to provide a complete view of the request lifecycle.
+- **Console Info Logging:** Displays `Log::info` (and higher level) messages in the terminal (when using `php artisan serve`) by adding a custom Monolog handler.
 - **Development Focused:** Designed to work in the local environment to aid debugging without impacting production performance.
 
 ## Requirements
 
 - PHP >= 7.2
-- Laravel 6.x, 7.x, 8.x, 9.x or 10.x
+- Laravel 6.x, 7.x, 8.x, 9.x, or 10.x
 
 ## Installation
 
@@ -33,31 +35,43 @@ Dottedai\QueryLogger\QueryLoggerServiceProvider::class,
 
 ## Usage
 
-Once installed and registered, the package will automatically begin listening for database queries if your application is running in the local environment.
+Once installed and registered, the package will automatically begin listening for database queries, route events, and log messages when your application is running in the local environment.
 
-### How It Works
+## How It Works
 
-1. **Query Listener**: The package uses Laravel's `DB::listen` method to capture all SQL queries.
-2. **Binding Replacement**: It replaces the query placeholders with actual binding values.
-3. **Logging**: Each query, along with its execution time, is logged using Laravel's logging system.
-4. **Console Output**: When not running in the console, queries are output to the browser's JavaScript console.
+### Query Listener
+The package uses Laravel's `DB::listen` method to capture all SQL queries, replaces query placeholders with their actual binding values, and logs the query along with its execution time.
 
-### Example Output
+### Route Logging
+It listens for Laravel's `RouteMatched` event to log route details such as the URI, controller handling the request, and any associated middleware.
 
-When a query is executed, you might see output similar to this in your log file and browser console:
+### Console Output
+When using the built-in PHP server (`php artisan serve`), queries and route logs are output to the terminal using PHP's `error_log()` function.
+
+### Console Info Logging
+A custom Monolog handler is added to also output `Log::info` (and higher-level) messages to the terminal. This means that any log calls such as `Log::info`, `Log::warning`, or `Log::error` will appear in your console when running locally.
+
+## Example Output
+
+When a query is executed and a route is matched, you might see output similar to this in your log file and terminal:
 
 ```
 Query: SELECT * FROM users WHERE email = 'example@example.com' [12 ms]
+Route: api/users | Controller: App\Http\Controllers\UserController@index | Middleware: api, auth
+INFO: Application started successfully.
 ```
 
 ## Customization
 
-You can modify the behavior of the query logger by editing the `QueryLoggerServiceProvider` class. For example, you might choose to disable the JavaScript console output or change the logging level based on your specific needs.
+You can modify the behavior of the query logger by editing the `QueryLoggerServiceProvider` class. For example, you might choose to disable the JavaScript console output, adjust the logging level, or customize the route logging format to fit your needs.
 
 ## Important Considerations
 
-- **Development Use Only**: This package is meant for local development environments. Make sure to disable or remove it from production to prevent potential performance issues or the inadvertent exposure of sensitive query data.
-- **Security**: Logging SQL queries can expose sensitive data. Always ensure this tool is only active in safe, non-production environments.
+### Development Use Only
+This package is meant for local development environments. Ensure it is disabled or removed from production to prevent potential performance issues or the inadvertent exposure of sensitive query data.
+
+### Security
+Logging SQL queries and other sensitive application data can expose critical information. Always use this tool only in safe, non-production environments.
 
 ## Contributing
 
