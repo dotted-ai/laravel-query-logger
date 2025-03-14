@@ -64,9 +64,13 @@ class QueryLoggerServiceProvider extends ServiceProvider
             // Add a custom Monolog handler to also output Log::info messages to the console.
             if (php_sapi_name() === 'cli-server') {
                 $logger = Log::getLogger();
-                // This handler will output any log with level INFO or higher to the PHP error log
-                $logger->pushHandler(new ErrorLogHandler(Logger::INFO, true, ErrorLogHandler::OPERATING_SYSTEM));
-            }
+                // Correct parameter order: (messageType, level, bubble)
+                $logger->pushHandler(new \Monolog\Handler\ErrorLogHandler(
+                    \Monolog\Handler\ErrorLogHandler::OPERATING_SYSTEM,
+                    \Monolog\Logger::INFO,
+                    true
+                ));
+            }            
         }
     }
 
